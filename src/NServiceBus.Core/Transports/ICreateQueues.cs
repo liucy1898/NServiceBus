@@ -1,5 +1,6 @@
 namespace NServiceBus.Transport
 {
+    using System.Threading;
     using System.Threading.Tasks;
 
     /// <summary>
@@ -10,6 +11,6 @@ namespace NServiceBus.Transport
         /// <summary>
         /// Creates message queues for the defined queue bindings and identity.
         /// </summary>
-        Task CreateQueueIfNecessary(QueueBindings queueBindings, string identity);
+        Task CreateQueueIfNecessary(QueueBindings queueBindings, string identity, CancellationToken token);
     }
 }

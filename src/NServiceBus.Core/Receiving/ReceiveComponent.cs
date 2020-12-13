@@ -39,10 +39,10 @@ namespace NServiceBus
 
                 if (configuration.CreateQueues)
                 {
-                    hostingConfiguration.AddInstaller(identity =>
+                    hostingConfiguration.AddInstaller((identity, token) =>
                     {
                         var queueCreator = transportReceiveInfrastructure.QueueCreatorFactory();
-                        return queueCreator.CreateQueueIfNecessary(configuration.transportSeam.QueueBindings, identity);
+                        return queueCreator.CreateQueueIfNecessary(configuration.transportSeam.QueueBindings, identity, token);
                     });
                 }
             }

@@ -4,6 +4,7 @@
     using System.Linq;
     using System.Net;
     using System.Runtime;
+    using System.Threading;
     using System.Threading.Tasks;
     using Installation;
     using Microsoft.Extensions.DependencyInjection;
@@ -62,7 +63,7 @@
 
         // This can't happen at start due to an old "feature" that allowed users to
         // run installers by "just creating the endpoint". See https://docs.particular.net/nservicebus/operations/installers#running-installers for more details.
-        public async Task RunInstallers()
+        public async Task RunInstallers(CancellationToken token)
         {
             if (!configuration.ShouldRunInstallers)
             {
@@ -73,12 +74,12 @@
 
             foreach (var internalInstaller in configuration.internalInstallers)
             {
-                await internalInstaller(installationUserName).ConfigureAwait(false);
+                await internalInstaller(installationUserName, token).ConfigureAwait(false);
             }
 
             foreach (var installer in builder.GetServices<INeedToInstallSomething>())
             {
-                await installer.Install(installationUserName).ConfigureAwait(false);
+                await installer.Install(installationUserName, token).ConfigureAwait(false);
             }
         }
 

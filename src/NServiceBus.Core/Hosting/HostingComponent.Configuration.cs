@@ -3,6 +3,7 @@
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Threading;
     using System.Threading.Tasks;
     using Hosting;
     using Installation;
@@ -68,7 +69,7 @@
 
             public Func<string, Task> HostDiagnosticsWriter { get; }
 
-            public void AddInstaller(Func<string, Task> installer)
+            public void AddInstaller(Func<string, CancellationToken, Task> installer)
             {
                 internalInstallers.Add(installer);
             }
@@ -92,7 +93,7 @@
 
             public List<Action<IServiceCollection>> UserRegistrations { get; }
 
-            internal ICollection<Func<string, Task>> internalInstallers = new List<Func<string, Task>>();
+            internal ICollection<Func<string, CancellationToken, Task>> internalInstallers = new List<Func<string, CancellationToken, Task>>();
         }
     }
 }
