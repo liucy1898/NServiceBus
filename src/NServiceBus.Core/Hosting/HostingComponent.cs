@@ -83,13 +83,13 @@
             }
         }
 
-        public async Task<IEndpointInstance> Start(IStartableEndpoint startableEndpoint)
+        public async Task<IEndpointInstance> Start(IStartableEndpoint startableEndpoint, CancellationToken token)
         {
             var hostStartupDiagnosticsWriter = HostStartupDiagnosticsWriterFactory.GetDiagnosticsWriter(configuration);
 
-            await hostStartupDiagnosticsWriter.Write(configuration.StartupDiagnostics.entries).ConfigureAwait(false);
+            await hostStartupDiagnosticsWriter.Write(configuration.StartupDiagnostics.entries, token).ConfigureAwait(false);
 
-            var endpointInstance = await startableEndpoint.Start().ConfigureAwait(false);
+            var endpointInstance = await startableEndpoint.Start(token).ConfigureAwait(false);
 
             configuration.CriticalError.SetEndpoint(endpointInstance);
 

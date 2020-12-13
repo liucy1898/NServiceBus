@@ -1,6 +1,7 @@
 namespace NServiceBus.AcceptanceTests.Core.FakeTransport
 {
     using System;
+    using System.Threading;
     using System.Threading.Tasks;
     using Settings;
     using Transport;
@@ -13,7 +14,7 @@ namespace NServiceBus.AcceptanceTests.Core.FakeTransport
             onQueueCreation = settings.GetOrDefault<Action<QueueBindings>>("FakeTransport.onQueueCreation");
         }
 
-        public Task CreateQueueIfNecessary(QueueBindings queueBindings, string identity)
+        public Task CreateQueueIfNecessary(QueueBindings queueBindings, string identity, CancellationToken token)
         {
             settings.Get<FakeTransport.StartUpSequence>().Add($"{nameof(ICreateQueues)}.{nameof(CreateQueueIfNecessary)}");
 

@@ -2,6 +2,7 @@ namespace NServiceBus
 {
     using System;
     using System.IO;
+    using System.Threading;
     using System.Threading.Tasks;
     using DataBus;
     using Logging;
@@ -44,7 +45,7 @@ namespace NServiceBus
             return key;
         }
 
-        public Task Start()
+        public Task Start(CancellationToken token)
         {
             logger.Info("File share data bus started. Location: " + basePath);
             //TODO: Implement a clean up thread

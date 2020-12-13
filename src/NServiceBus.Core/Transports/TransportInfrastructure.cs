@@ -2,6 +2,7 @@ namespace NServiceBus.Transport
 {
     using System;
     using System.Collections.Generic;
+    using System.Threading;
     using System.Threading.Tasks;
     using Routing;
 
@@ -66,7 +67,7 @@ namespace NServiceBus.Transport
         /// <summary>
         /// Performs any action required to warm up the transport infrastructure before starting the endpoint.
         /// </summary>
-        public virtual Task Start()
+        public virtual Task Start(CancellationToken token)
         {
             return Task.CompletedTask;
         }

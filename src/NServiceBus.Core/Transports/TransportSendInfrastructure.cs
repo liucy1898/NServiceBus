@@ -1,6 +1,7 @@
 namespace NServiceBus.Transport
 {
     using System;
+    using System.Threading;
     using System.Threading.Tasks;
 
     /// <summary>
@@ -14,7 +15,7 @@ namespace NServiceBus.Transport
         /// <param name="preStartupCheck">Callback to perform checks before the transports starts sending messages.</param>
         /// </summary>
         public TransportSendInfrastructure(Func<IDispatchMessages> dispatcherFactory,
-            Func<Task<StartupCheckResult>> preStartupCheck)
+            Func<CancellationToken, Task<StartupCheckResult>> preStartupCheck)
         {
             Guard.AgainstNull(nameof(dispatcherFactory), dispatcherFactory);
             Guard.AgainstNull(nameof(preStartupCheck), preStartupCheck);
@@ -30,6 +31,6 @@ namespace NServiceBus.Transport
         /// <summary>
         /// Callback to perform checks before the transports starts sending messages.
         /// </summary>
-        public Func<Task<StartupCheckResult>> PreStartupCheck { get; }
+        public Func<CancellationToken, Task<StartupCheckResult>> PreStartupCheck { get; }
     }
 }

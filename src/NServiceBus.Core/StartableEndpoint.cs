@@ -5,6 +5,7 @@ namespace NServiceBus
     using System.Runtime.InteropServices;
 #endif
     using System.Security.Principal;
+    using System.Threading;
     using System.Threading.Tasks;
     using Settings;
     using Transport;
@@ -32,12 +33,12 @@ namespace NServiceBus
             this.builder = builder;
         }
 
-        public async Task<IEndpointInstance> Start()
+        public async Task<IEndpointInstance> Start(CancellationToken token)
         {
-            await sendComponent.SendPreStartupChecks().ConfigureAwait(false);
-            await receiveComponent.ReceivePreStartupChecks().ConfigureAwait(false);
+            await sendComponent.SendPreStartupChecks(token).ConfigureAwait(false);
+            await receiveComponent.ReceivePreStartupChecks(token).ConfigureAwait(false);
 
-            await transportInfrastructure.Start().ConfigureAwait(false);
+            await transportInfrastructure.Start(token).ConfigureAwait(false);
 
             var pipelineCache = pipelineComponent.BuildPipelineCache(builder);
             var messageOperations = sendComponent.CreateMessageOperations(builder, pipelineComponent);
@@ -52,9 +53,9 @@ namespace NServiceBus
 #else
             AppDomain.CurrentDomain.SetPrincipalPolicy(PrincipalPolicy.WindowsPrincipal);
 #endif
-            await receiveComponent.PrepareToStart(builder, recoverabilityComponent, messageOperations, pipelineComponent, pipelineCache).ConfigureAwait(false);
+            await receiveComponent.PrepareToStart(builder, recoverabilityComponent, messageOperations, pipelineComponent, pipelineCache, token).ConfigureAwait(false);
 
-            await featureComponent.Start(builder, messageSession).ConfigureAwait(false);
+            await featureComponent.Start(builder, messageSession, token).ConfigureAwait(false);
 
             var runningInstance = new RunningEndpointInstance(settings, hostingComponent, receiveComponent, featureComponent, messageSession, transportInfrastructure);
 

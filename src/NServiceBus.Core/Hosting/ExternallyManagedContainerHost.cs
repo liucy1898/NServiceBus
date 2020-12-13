@@ -44,7 +44,7 @@ namespace NServiceBus
 
             await hostingComponent.RunInstallers(token).ConfigureAwait(false);
 
-            var endpointInstance = await hostingComponent.Start(startableEndpoint).ConfigureAwait(false);
+            var endpointInstance = await hostingComponent.Start(startableEndpoint, token).ConfigureAwait(false);
 
             messageSession = endpointInstance;
 

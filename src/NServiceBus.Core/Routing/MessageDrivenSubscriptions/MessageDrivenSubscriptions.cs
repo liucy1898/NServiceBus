@@ -1,6 +1,7 @@
 namespace NServiceBus.Features
 {
     using System;
+    using System.Threading;
     using System.Threading.Tasks;
     using Microsoft.Extensions.DependencyInjection;
     using Transport;
@@ -111,7 +112,7 @@ namespace NServiceBus.Features
                 this.subscriptionStorage = subscriptionStorage;
             }
 
-            protected override Task OnStart(IMessageSession session)
+            protected override Task OnStart(IMessageSession session, CancellationToken token)
             {
                 subscriptionStorage?.Init();
                 return Task.CompletedTask;

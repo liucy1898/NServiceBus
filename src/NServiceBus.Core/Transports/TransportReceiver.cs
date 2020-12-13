@@ -1,6 +1,7 @@
 namespace NServiceBus
 {
     using System;
+    using System.Threading;
     using System.Threading.Tasks;
     using Logging;
     using Transport;
@@ -28,9 +29,9 @@ namespace NServiceBus
 
         public string Id { get; }
 
-        public Task Init()
+        public Task Init(CancellationToken token)
         {
-            return receiver.Init(c => pipelineExecutor.Invoke(c), c => recoverabilityExecutor.Invoke(c), criticalError, pushSettings);
+            return receiver.Init(c => pipelineExecutor.Invoke(c, token), c => recoverabilityExecutor.Invoke(c, token), criticalError, pushSettings, token);
         }
 
         public Task Start()

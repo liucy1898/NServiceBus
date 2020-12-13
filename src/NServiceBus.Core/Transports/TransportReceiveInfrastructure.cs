@@ -1,6 +1,7 @@
 namespace NServiceBus.Transport
 {
     using System;
+    using System.Threading;
     using System.Threading.Tasks;
 
     /// <summary>
@@ -17,7 +18,7 @@ namespace NServiceBus.Transport
         public TransportReceiveInfrastructure(
             Func<IPushMessages> messagePumpFactory,
             Func<ICreateQueues> queueCreatorFactory,
-            Func<Task<StartupCheckResult>> preStartupCheck)
+            Func<CancellationToken, Task<StartupCheckResult>> preStartupCheck)
         {
             Guard.AgainstNull(nameof(messagePumpFactory), messagePumpFactory);
             Guard.AgainstNull(nameof(queueCreatorFactory), queueCreatorFactory);
@@ -42,6 +43,6 @@ namespace NServiceBus.Transport
         /// Callback to perform checks before the transports starts receiving messages.
         /// </summary>
         /// <remarks>Queue creation happens before the check is executed.</remarks>
-        public Func<Task<StartupCheckResult>> PreStartupCheck { get; }
+        public Func<CancellationToken, Task<StartupCheckResult>> PreStartupCheck { get; }
     }
 }

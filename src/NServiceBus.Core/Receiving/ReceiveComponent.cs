@@ -3,6 +3,7 @@ namespace NServiceBus
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Threading;
     using System.Threading.Tasks;
     using Logging;
     using Microsoft.Extensions.DependencyInjection;
@@ -142,7 +143,8 @@ namespace NServiceBus
             RecoverabilityComponent recoverabilityComponent,
             MessageOperations messageOperations,
             PipelineComponent pipelineComponent,
-            IPipelineCache pipelineCache)
+            IPipelineCache pipelineCache,
+            CancellationToken token)
         {
             if (configuration.IsSendOnlyEndpoint)
             {
@@ -163,7 +165,7 @@ namespace NServiceBus
             {
                 try
                 {
-                    await receiver.Init().ConfigureAwait(false);
+                    await receiver.Init(token).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
@@ -173,11 +175,11 @@ namespace NServiceBus
             }
         }
 
-        public async Task ReceivePreStartupChecks()
+        public async Task ReceivePreStartupChecks(CancellationToken token)
         {
             if (transportReceiveInfrastructure != null)
             {
-                var result = await transportReceiveInfrastructure.PreStartupCheck().ConfigureAwait(false);
+                var result = await transportReceiveInfrastructure.PreStartupCheck(token).ConfigureAwait(false);
 
                 if (!result.Succeeded)
                 {

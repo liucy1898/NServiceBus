@@ -1,6 +1,7 @@
 namespace NServiceBus
 {
     using System;
+    using System.Threading;
     using System.Threading.Tasks;
 
     /// <summary>
@@ -157,12 +158,13 @@ namespace NServiceBus
         /// </summary>
         /// <param name="session">Object being extended.</param>
         /// <param name="messageType">The type of message to subscribe to.</param>
-        public static Task Subscribe(this IMessageSession session, Type messageType)
+        /// <param name="token">A <see cref="CancellationToken"/> to observe while subscribing.</param>
+        public static Task Subscribe(this IMessageSession session, Type messageType, CancellationToken token)
         {
             Guard.AgainstNull(nameof(session), session);
             Guard.AgainstNull(nameof(messageType), messageType);
 
-            return session.Subscribe(messageType, new SubscribeOptions());
+            return session.Subscribe(messageType, new SubscribeOptions(), token);
         }
 
         /// <summary>
@@ -171,11 +173,12 @@ namespace NServiceBus
         /// </summary>
         /// <param name="session">Object being extended.</param>
         /// <typeparam name="T">The type of message to subscribe to.</typeparam>
-        public static Task Subscribe<T>(this IMessageSession session)
+        /// <param name="token">A <see cref="CancellationToken"/> to observe while subscribing.</param>
+        public static Task Subscribe<T>(this IMessageSession session, CancellationToken token)
         {
             Guard.AgainstNull(nameof(session), session);
 
-            return session.Subscribe(typeof(T), new SubscribeOptions());
+            return session.Subscribe(typeof(T), new SubscribeOptions(), token);
         }
 
         /// <summary>

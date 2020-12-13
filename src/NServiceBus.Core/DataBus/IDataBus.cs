@@ -2,6 +2,7 @@ namespace NServiceBus.DataBus
 {
     using System;
     using System.IO;
+    using System.Threading;
     using System.Threading.Tasks;
 
     /// <summary>
@@ -26,6 +27,6 @@ namespace NServiceBus.DataBus
         /// <summary>
         /// Called when the bus starts up to allow the data bus to active background tasks.
         /// </summary>
-        Task Start();
+        Task Start(CancellationToken token);
     }
 }

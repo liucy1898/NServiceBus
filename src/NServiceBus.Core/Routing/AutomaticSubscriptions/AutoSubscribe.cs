@@ -3,6 +3,7 @@
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Threading;
     using System.Threading.Tasks;
     using Logging;
     using Microsoft.Extensions.DependencyInjection;
@@ -60,7 +61,7 @@
                 this.excludedTypes = excludedTypes;
             }
 
-            protected override Task OnStart(IMessageSession session)
+            protected override Task OnStart(IMessageSession session, CancellationToken token)
             {
                 var tasks = new Task[messagesHandledByThisEndpoint.Count];
                 for (var i = 0; i < messagesHandledByThisEndpoint.Count; i++)
@@ -69,7 +70,7 @@
 
                     tasks[i] = excludedTypes.Contains(eventType)
                         ? Task.CompletedTask
-                        : SubscribeToEvent(session, eventType);
+                        : SubscribeToEvent(session, eventType, token);
                 }
                 return Task.WhenAll(tasks);
             }
@@ -79,11 +80,11 @@
                 return Task.CompletedTask;
             }
 
-            static async Task SubscribeToEvent(IMessageSession session, Type eventType)
+            static async Task SubscribeToEvent(IMessageSession session, Type eventType, CancellationToken token)
             {
                 try
                 {
-                    await session.Subscribe(eventType).ConfigureAwait(false);
+                    await session.Subscribe(eventType, token).ConfigureAwait(false);
                     Logger.DebugFormat("Auto subscribed to event {0}", eventType);
                 }
                 catch (Exception e) when (!(e is QueueNotFoundException))

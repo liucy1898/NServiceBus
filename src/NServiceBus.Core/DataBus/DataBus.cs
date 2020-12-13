@@ -1,6 +1,7 @@
 namespace NServiceBus.Features
 {
     using System;
+    using System.Threading;
     using System.Threading.Tasks;
     using Microsoft.Extensions.DependencyInjection;
     using NServiceBus.DataBus;
@@ -52,9 +53,9 @@ namespace NServiceBus.Features
                 this.dataBus = dataBus;
             }
 
-            protected override Task OnStart(IMessageSession session)
+            protected override Task OnStart(IMessageSession session, CancellationToken token)
             {
-                return dataBus.Start();
+                return dataBus.Start(token);
             }
 
             protected override Task OnStop(IMessageSession session)

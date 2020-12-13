@@ -31,7 +31,7 @@ namespace NServiceBus
 
             var startableEndpoint = await Create(configuration, token).ConfigureAwait(false);
 
-            return await startableEndpoint.Start().ConfigureAwait(false);
+            return await startableEndpoint.Start(token).ConfigureAwait(false);
         }
     }
 }

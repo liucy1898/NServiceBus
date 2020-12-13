@@ -1,6 +1,7 @@
 ﻿namespace NServiceBus.Transport
 {
     using System;
+    using System.Threading;
     using System.Threading.Tasks;
 
     /// <summary>
@@ -15,10 +16,12 @@
         /// <param name="onError">Called when there is a message that has failed processing.</param>
         /// <param name="criticalError">Called when there is a critical error in the message pump.</param>
         /// <param name="settings">Runtime settings for the message pump.</param>
+        /// <param name="token">A <see cref="CancellationToken"/> to observe while preparing the message pump.</param>
         Task Init(Func<MessageContext, Task> onMessage,
             Func<ErrorContext, Task<ErrorHandleResult>> onError,
             CriticalError criticalError,
-            PushSettings settings);
+            PushSettings settings,
+            CancellationToken token);
 
         /// <summary>
         /// Starts pushing messages.

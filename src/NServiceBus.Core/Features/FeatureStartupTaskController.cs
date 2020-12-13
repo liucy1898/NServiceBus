@@ -1,6 +1,7 @@
 ﻿namespace NServiceBus.Features
 {
     using System;
+    using System.Threading;
     using System.Threading.Tasks;
     using Logging;
 
@@ -14,7 +15,7 @@
 
         public string Name { get; }
 
-        public Task Start(IServiceProvider builder, IMessageSession messageSession)
+        public Task Start(IServiceProvider builder, IMessageSession messageSession, CancellationToken token)
         {
             if (Log.IsDebugEnabled)
             {
@@ -22,7 +23,7 @@
             }
 
             instance = factory(builder);
-            return instance.PerformStartup(messageSession);
+            return instance.PerformStartup(messageSession, token);
         }
 
         public async Task Stop()

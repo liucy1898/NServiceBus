@@ -5,6 +5,7 @@ namespace NServiceBus
     using System.IO;
     using System.Linq;
     using System.Text;
+    using System.Threading;
     using System.Threading.Tasks;
     using DelayedDelivery;
     using DeliveryConstraints;
@@ -25,11 +26,11 @@ namespace NServiceBus
             this.maxMessageSizeKB = maxMessageSizeKB;
         }
 
-        public Task Dispatch(TransportOperations outgoingMessages, TransportTransaction transaction, ContextBag context)
+        public Task Dispatch(TransportOperations outgoingMessages, TransportTransaction transaction, ContextBag context, CancellationToken token)
         {
             return Task.WhenAll(
-                DispatchUnicast(outgoingMessages.UnicastTransportOperations, transaction),
-                DispatchMulticast(outgoingMessages.MulticastTransportOperations, transaction));
+                DispatchUnicast(outgoingMessages.UnicastTransportOperations, transaction, token),
+                DispatchMulticast(outgoingMessages.MulticastTransportOperations, transaction, token));
         }
 
         async Task DispatchMulticast(IEnumerable<MulticastTransportOperation> transportOperations, TransportTransaction transaction)
@@ -51,17 +52,17 @@ namespace NServiceBus
                 .ConfigureAwait(false);
         }
 
-        Task DispatchUnicast(IEnumerable<UnicastTransportOperation> operations, TransportTransaction transaction)
+        Task DispatchUnicast(IEnumerable<UnicastTransportOperation> operations, TransportTransaction transaction, CancellationToken token)
         {
             return Task.WhenAll(operations.Select(operation =>
             {
                 PathChecker.ThrowForBadPath(operation.Destination, "message destination");
 
-                return WriteMessage(operation.Destination, operation, transaction);
+                return WriteMessage(operation.Destination, operation, transaction, token);
             }));
         }
 
-        async Task WriteMessage(string destination, IOutgoingTransportOperation transportOperation, TransportTransaction transaction)
+        async Task WriteMessage(string destination, IOutgoingTransportOperation transportOperation, TransportTransaction transaction, CancellationToken token)
         {
             var message = transportOperation.Message;
 
@@ -73,7 +74,7 @@ namespace NServiceBus
 
             var bodyPath = Path.Combine(bodyDir, nativeMessageId) + LearningTransportMessagePump.BodyFileSuffix;
 
-            await AsyncFile.WriteBytes(bodyPath, message.Body)
+            await AsyncFile.WriteBytes(bodyPath, message.Body, token)
                 .ConfigureAwait(false);
 
             DateTimeOffset? timeToDeliver = null;
@@ -123,13 +124,13 @@ namespace NServiceBus
 
             if (transportOperation.RequiredDispatchConsistency != DispatchConsistency.Isolated && transaction.TryGet(out ILearningTransportTransaction directoryBasedTransaction))
             {
-                await directoryBasedTransaction.Enlist(messagePath, headerPayload)
+                await directoryBasedTransaction.Enlist(messagePath, headerPayload, token)
                     .ConfigureAwait(false);
             }
             else
             {
                 // atomic avoids the file being locked when the receiver tries to process it
-                await AsyncFile.WriteTextAtomic(messagePath, headerPayload)
+                await AsyncFile.WriteTextAtomic(messagePath, headerPayload, token)
                     .ConfigureAwait(false);
             }
         }

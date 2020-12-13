@@ -1,6 +1,7 @@
 ﻿namespace NServiceBus
 {
     using System;
+    using System.Threading;
     using System.Threading.Tasks;
     using MessageInterfaces;
     using Microsoft.Extensions.DependencyInjection;
@@ -38,9 +39,9 @@
             return sendComponent;
         }
 
-        public async Task SendPreStartupChecks()
+        public async Task SendPreStartupChecks(CancellationToken token)
         {
-            var sendResult = await transportSendInfrastructure.PreStartupCheck().ConfigureAwait(false);
+            var sendResult = await transportSendInfrastructure.PreStartupCheck(token).ConfigureAwait(false);
             if (!sendResult.Succeeded)
             {
                 throw new Exception($"Pre start-up check failed: {sendResult.ErrorMessage}");

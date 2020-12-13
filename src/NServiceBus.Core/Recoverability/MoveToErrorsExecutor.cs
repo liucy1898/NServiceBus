@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Threading;
     using System.Threading.Tasks;
     using Extensibility;
     using Routing;
@@ -16,7 +17,7 @@
             this.headerCustomizations = headerCustomizations;
         }
 
-        public Task MoveToErrorQueue(string errorQueueAddress, IncomingMessage message, Exception exception, TransportTransaction transportTransaction)
+        public Task MoveToErrorQueue(string errorQueueAddress, IncomingMessage message, Exception exception, TransportTransaction transportTransaction, CancellationToken token)
         {
             message.RevertToOriginalBodyIfNeeded();
 
@@ -37,7 +38,7 @@
 
             var transportOperations = new TransportOperations(new TransportOperation(outgoingMessage, new UnicastAddressTag(errorQueueAddress)));
 
-            return dispatcher.Dispatch(transportOperations, transportTransaction, new ContextBag());
+            return dispatcher.Dispatch(transportOperations, transportTransaction, new ContextBag(), token);
         }
 
         IDispatchMessages dispatcher;
