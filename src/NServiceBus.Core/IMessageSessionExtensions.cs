@@ -14,12 +14,13 @@ namespace NServiceBus
         /// </summary>
         /// <param name="session">The instance of <see cref="IMessageSession" /> to use for the action.</param>
         /// <param name="message">The message to send.</param>
-        public static Task Send(this IMessageSession session, object message)
+        /// <param name="token">A <see cref="CancellationToken"/> to observe while sending.</param>
+        public static Task Send(this IMessageSession session, object message, CancellationToken token)
         {
             Guard.AgainstNull(nameof(session), session);
             Guard.AgainstNull(nameof(message), message);
 
-            return session.Send(message, new SendOptions());
+            return session.Send(message, new SendOptions(), token);
         }
 
         /// <summary>
@@ -28,15 +29,16 @@ namespace NServiceBus
         /// <typeparam name="T">The type of message, usually an interface.</typeparam>
         /// <param name="session">The instance of <see cref="IMessageSession" /> to use for the action.</param>
         /// <param name="messageConstructor">An action which initializes properties of the message.</param>
+        /// <param name="token">A <see cref="CancellationToken"/> to observe while sending.</param>
         /// <remarks>
         /// The message will be sent to the destination configured for <typeparamref name="T" />.
         /// </remarks>
-        public static Task Send<T>(this IMessageSession session, Action<T> messageConstructor)
+        public static Task Send<T>(this IMessageSession session, Action<T> messageConstructor, CancellationToken token)
         {
             Guard.AgainstNull(nameof(session), session);
             Guard.AgainstNull(nameof(messageConstructor), messageConstructor);
 
-            return session.Send(messageConstructor, new SendOptions());
+            return session.Send(messageConstructor, new SendOptions(), token);
         }
 
         /// <summary>
@@ -45,7 +47,8 @@ namespace NServiceBus
         /// <param name="session">The instance of <see cref="IMessageSession" /> to use for the action.</param>
         /// <param name="destination">The address of the destination to which the message will be sent.</param>
         /// <param name="message">The message to send.</param>
-        public static Task Send(this IMessageSession session, string destination, object message)
+        /// <param name="token">A <see cref="CancellationToken"/> to observe while sending.</param>
+        public static Task Send(this IMessageSession session, string destination, object message, CancellationToken token)
         {
             Guard.AgainstNull(nameof(session), session);
             Guard.AgainstNullAndEmpty(nameof(destination), destination);
@@ -55,7 +58,7 @@ namespace NServiceBus
 
             options.SetDestination(destination);
 
-            return session.Send(message, options);
+            return session.Send(message, options, token);
         }
 
         /// <summary>
@@ -65,7 +68,8 @@ namespace NServiceBus
         /// <param name="session">The instance of <see cref="IMessageSession" /> to use for the action.</param>
         /// <param name="destination">The destination to which the message will be sent.</param>
         /// <param name="messageConstructor">An action which initializes properties of the message.</param>
-        public static Task Send<T>(this IMessageSession session, string destination, Action<T> messageConstructor)
+        /// <param name="token">A <see cref="CancellationToken"/> to observe while sending.</param>
+        public static Task Send<T>(this IMessageSession session, string destination, Action<T> messageConstructor, CancellationToken token)
         {
             Guard.AgainstNull(nameof(session), session);
             Guard.AgainstNullAndEmpty(nameof(destination), destination);
@@ -75,7 +79,7 @@ namespace NServiceBus
 
             options.SetDestination(destination);
 
-            return session.Send(messageConstructor, options);
+            return session.Send(messageConstructor, options, token);
         }
 
         /// <summary>
@@ -83,7 +87,8 @@ namespace NServiceBus
         /// </summary>
         /// <param name="session">Object being extended.</param>
         /// <param name="message">The message to send.</param>
-        public static Task SendLocal(this IMessageSession session, object message)
+        /// <param name="token">A <see cref="CancellationToken"/> to observe while sending.</param>
+        public static Task SendLocal(this IMessageSession session, object message, CancellationToken token)
         {
             Guard.AgainstNull(nameof(session), session);
             Guard.AgainstNull(nameof(message), message);
@@ -92,7 +97,7 @@ namespace NServiceBus
 
             options.RouteToThisEndpoint();
 
-            return session.Send(message, options);
+            return session.Send(message, options, token);
         }
 
         /// <summary>
@@ -101,7 +106,8 @@ namespace NServiceBus
         /// <typeparam name="T">The type of message, usually an interface.</typeparam>
         /// <param name="session">Object being extended.</param>
         /// <param name="messageConstructor">An action which initializes properties of the message.</param>
-        public static Task SendLocal<T>(this IMessageSession session, Action<T> messageConstructor)
+        /// <param name="token">A <see cref="CancellationToken"/> to observe while sending.</param>
+        public static Task SendLocal<T>(this IMessageSession session, Action<T> messageConstructor, CancellationToken token)
         {
             Guard.AgainstNull(nameof(session), session);
             Guard.AgainstNull(nameof(messageConstructor), messageConstructor);
@@ -110,7 +116,7 @@ namespace NServiceBus
 
             options.RouteToThisEndpoint();
 
-            return session.Send(messageConstructor, options);
+            return session.Send(messageConstructor, options, token);
         }
 
         /// <summary>
@@ -118,12 +124,13 @@ namespace NServiceBus
         /// </summary>
         /// <param name="session">The instance of <see cref="IMessageSession" /> to use for the action.</param>
         /// <param name="message">The message to publish.</param>
-        public static Task Publish(this IMessageSession session, object message)
+        /// <param name="token">A <see cref="CancellationToken"/> to observe while publishing.</param>
+        public static Task Publish(this IMessageSession session, object message, CancellationToken token)
         {
             Guard.AgainstNull(nameof(session), session);
             Guard.AgainstNull(nameof(message), message);
 
-            return session.Publish(message, new PublishOptions());
+            return session.Publish(message, new PublishOptions(), token);
         }
 
         /// <summary>
@@ -131,11 +138,12 @@ namespace NServiceBus
         /// </summary>
         /// <param name="session">The instance of <see cref="IMessageSession" /> to use for the action.</param>
         /// <typeparam name="T">The message type.</typeparam>
-        public static Task Publish<T>(this IMessageSession session)
+        /// <param name="token">A <see cref="CancellationToken"/> to observe while publishing.</param>
+        public static Task Publish<T>(this IMessageSession session, CancellationToken token)
         {
             Guard.AgainstNull(nameof(session), session);
 
-            return session.Publish<T>(_ => { }, new PublishOptions());
+            return session.Publish<T>(_ => { }, new PublishOptions(), token);
         }
 
         /// <summary>
@@ -144,12 +152,13 @@ namespace NServiceBus
         /// <typeparam name="T">The type of message, usually an interface.</typeparam>
         /// <param name="session">The instance of <see cref="IMessageSession" /> to use for the action.</param>
         /// <param name="messageConstructor">An action which initializes properties of the message.</param>
-        public static Task Publish<T>(this IMessageSession session, Action<T> messageConstructor)
+        /// <param name="token">A <see cref="CancellationToken"/> to observe while publishing.</param>
+        public static Task Publish<T>(this IMessageSession session, Action<T> messageConstructor, CancellationToken token)
         {
             Guard.AgainstNull(nameof(session), session);
             Guard.AgainstNull(nameof(messageConstructor), messageConstructor);
 
-            return session.Publish(messageConstructor, new PublishOptions());
+            return session.Publish(messageConstructor, new PublishOptions(), token);
         }
 
         /// <summary>
@@ -186,24 +195,26 @@ namespace NServiceBus
         /// </summary>
         /// <param name="session">Object being extended.</param>
         /// <param name="messageType">The type of message to subscribe to.</param>
-        public static Task Unsubscribe(this IMessageSession session, Type messageType)
+        /// <param name="token">A <see cref="CancellationToken"/> to observe while unsubscribing.</param>
+        public static Task Unsubscribe(this IMessageSession session, Type messageType, CancellationToken token)
         {
             Guard.AgainstNull(nameof(session), session);
             Guard.AgainstNull(nameof(messageType), messageType);
 
-            return session.Unsubscribe(messageType, new UnsubscribeOptions());
+            return session.Unsubscribe(messageType, new UnsubscribeOptions(), token);
         }
 
         /// <summary>
         /// Unsubscribes from receiving published messages of the specified type.
         /// </summary>
         /// <param name="session">Object being extended.</param>
+        /// <param name="token">A <see cref="CancellationToken"/> to observe while unsubscribing.</param>
         /// <typeparam name="T">The type of message to unsubscribe from.</typeparam>
-        public static Task Unsubscribe<T>(this IMessageSession session)
+        public static Task Unsubscribe<T>(this IMessageSession session, CancellationToken token)
         {
             Guard.AgainstNull(nameof(session), session);
 
-            return session.Unsubscribe(typeof(T), new UnsubscribeOptions());
+            return session.Unsubscribe(typeof(T), new UnsubscribeOptions(), token);
         }
     }
 }

@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Threading;
     using System.Threading.Tasks;
     using Extensibility;
     using Logging;
@@ -22,11 +23,11 @@
             this.subscriberEndpoint = subscriberEndpoint;
         }
 
-        protected override async Task Terminate(ISubscribeContext context)
+        protected override async Task Terminate(ISubscribeContext context, CancellationToken token)
         {
             var eventType = context.EventType;
 
-            await subscriptionManager.Subscribe(eventType, context.Extensions).ConfigureAwait(false);
+            await subscriptionManager.Subscribe(eventType, context.Extensions, token).ConfigureAwait(false);
 
             var publisherAddresses = subscriptionRouter.GetAddressesForEventType(eventType);
             if (publisherAddresses.Count == 0)
@@ -48,27 +49,27 @@
                 subscriptionMessage.Headers[Headers.TimeSent] = DateTimeOffsetHelper.ToWireFormattedString(DateTimeOffset.UtcNow);
                 subscriptionMessage.Headers[Headers.NServiceBusVersion] = GitVersionInformation.MajorMinorPatch;
 
-                subscribeTasks.Add(SendSubscribeMessageWithRetries(publisherAddress, subscriptionMessage, eventType.AssemblyQualifiedName, context.Extensions));
+                subscribeTasks.Add(SendSubscribeMessageWithRetries(publisherAddress, subscriptionMessage, eventType.AssemblyQualifiedName, context.Extensions, token));
             }
 
             await Task.WhenAll(subscribeTasks).ConfigureAwait(false);
         }
 
-        async Task SendSubscribeMessageWithRetries(string destination, OutgoingMessage subscriptionMessage, string messageType, ContextBag context, int retriesCount = 0)
+        async Task SendSubscribeMessageWithRetries(string destination, OutgoingMessage subscriptionMessage, string messageType, ContextBag context, CancellationToken token, int retriesCount = 0)
         {
             var state = context.GetOrCreate<MessageDrivenSubscribeTerminator.Settings>();
             try
             {
                 var transportOperation = new TransportOperation(subscriptionMessage, new UnicastAddressTag(destination));
                 var transportTransaction = context.GetOrCreate<TransportTransaction>();
-                await dispatcher.Dispatch(new TransportOperations(transportOperation), transportTransaction, context).ConfigureAwait(false);
+                await dispatcher.Dispatch(new TransportOperations(transportOperation), transportTransaction, context, token).ConfigureAwait(false);
             }
             catch (QueueNotFoundException ex)
             {
                 if (retriesCount < state.MaxRetries)
                 {
-                    await Task.Delay(state.RetryDelay).ConfigureAwait(false);
-                    await SendSubscribeMessageWithRetries(destination, subscriptionMessage, messageType, context, ++retriesCount).ConfigureAwait(false);
+                    await Task.Delay(state.RetryDelay, token).ConfigureAwait(false);
+                    await SendSubscribeMessageWithRetries(destination, subscriptionMessage, messageType, context, token, ++retriesCount).ConfigureAwait(false);
                 }
                 else
                 {

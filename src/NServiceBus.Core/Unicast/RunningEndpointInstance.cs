@@ -69,58 +69,58 @@ namespace NServiceBus
             }
         }
 
-        public Task Send(object message, SendOptions sendOptions)
+        public Task Send(object message, SendOptions sendOptions, CancellationToken token)
         {
             Guard.AgainstNull(nameof(message), message);
             Guard.AgainstNull(nameof(sendOptions), sendOptions);
 
             GuardAgainstUseWhenNotStarted();
-            return messageSession.Send(message, sendOptions);
+            return messageSession.Send(message, sendOptions, token);
         }
 
-        public Task Send<T>(Action<T> messageConstructor, SendOptions sendOptions)
+        public Task Send<T>(Action<T> messageConstructor, SendOptions sendOptions, CancellationToken token)
         {
             Guard.AgainstNull(nameof(messageConstructor), messageConstructor);
             Guard.AgainstNull(nameof(sendOptions), sendOptions);
 
             GuardAgainstUseWhenNotStarted();
-            return messageSession.Send(messageConstructor, sendOptions);
+            return messageSession.Send(messageConstructor, sendOptions, token);
         }
 
-        public Task Publish(object message, PublishOptions publishOptions)
+        public Task Publish(object message, PublishOptions publishOptions, CancellationToken token)
         {
             Guard.AgainstNull(nameof(message), message);
             Guard.AgainstNull(nameof(publishOptions), publishOptions);
 
             GuardAgainstUseWhenNotStarted();
-            return messageSession.Publish(message, publishOptions);
+            return messageSession.Publish(message, publishOptions, token);
         }
 
-        public Task Publish<T>(Action<T> messageConstructor, PublishOptions publishOptions)
+        public Task Publish<T>(Action<T> messageConstructor, PublishOptions publishOptions, CancellationToken token)
         {
             Guard.AgainstNull(nameof(messageConstructor), messageConstructor);
             Guard.AgainstNull(nameof(publishOptions), publishOptions);
 
             GuardAgainstUseWhenNotStarted();
-            return messageSession.Publish(messageConstructor, publishOptions);
+            return messageSession.Publish(messageConstructor, publishOptions, token);
         }
 
-        public Task Subscribe(Type eventType, SubscribeOptions subscribeOptions)
+        public Task Subscribe(Type eventType, SubscribeOptions subscribeOptions, CancellationToken token)
         {
             Guard.AgainstNull(nameof(eventType), eventType);
             Guard.AgainstNull(nameof(subscribeOptions), subscribeOptions);
 
             GuardAgainstUseWhenNotStarted();
-            return messageSession.Subscribe(eventType, subscribeOptions);
+            return messageSession.Subscribe(eventType, subscribeOptions, token);
         }
 
-        public Task Unsubscribe(Type eventType, UnsubscribeOptions unsubscribeOptions)
+        public Task Unsubscribe(Type eventType, UnsubscribeOptions unsubscribeOptions, CancellationToken token)
         {
             Guard.AgainstNull(nameof(eventType), eventType);
             Guard.AgainstNull(nameof(unsubscribeOptions), unsubscribeOptions);
 
             GuardAgainstUseWhenNotStarted();
-            return messageSession.Unsubscribe(eventType, unsubscribeOptions);
+            return messageSession.Unsubscribe(eventType, unsubscribeOptions, token);
         }
 
         void GuardAgainstUseWhenNotStarted()

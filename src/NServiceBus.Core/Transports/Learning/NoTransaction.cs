@@ -2,6 +2,7 @@ namespace NServiceBus
 {
     using System;
     using System.IO;
+    using System.Threading;
     using System.Threading.Tasks;
 
     class NoTransaction : ILearningTransportTransaction
@@ -21,7 +22,7 @@ namespace NServiceBus
             return AsyncFile.Move(incomingFilePath, FileToProcess);
         }
 
-        public Task Enlist(string messagePath, string messageContents) => AsyncFile.WriteText(messagePath, messageContents);
+        public Task Enlist(string messagePath, string messageContents, CancellationToken token) => AsyncFile.WriteText(messagePath, messageContents, token);
 
         public Task Commit() => Task.CompletedTask;
 

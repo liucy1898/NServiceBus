@@ -39,7 +39,7 @@
                 CriticalError criticalError,
                 StartupDiagnosticEntries startupDiagnostics,
                 string diagnosticsPath,
-                Func<string, Task> hostDiagnosticsWriter,
+                Func<string, CancellationToken, Task> hostDiagnosticsWriter,
                 string endpointName,
                 IServiceCollection services,
                 string installationUserName,
@@ -67,7 +67,7 @@
 
             public StartupDiagnosticEntries StartupDiagnostics { get; }
 
-            public Func<string, Task> HostDiagnosticsWriter { get; }
+            public Func<string, CancellationToken, Task> HostDiagnosticsWriter { get; }
 
             public void AddInstaller(Func<string, CancellationToken, Task> installer)
             {

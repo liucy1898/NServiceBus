@@ -3,6 +3,7 @@ namespace NServiceBus
     using System;
     using System.Collections.Concurrent;
     using System.IO;
+    using System.Threading;
     using System.Threading.Tasks;
     using Logging;
 
@@ -44,7 +45,7 @@ namespace NServiceBus
             while (outgoingFiles.TryDequeue(out _)) { }
         }
 
-        public Task Enlist(string messagePath, string messageContents)
+        public Task Enlist(string messagePath, string messageContents, CancellationToken token)
         {
             var inProgressFileName = Path.GetFileNameWithoutExtension(messagePath) + ".out";
 
@@ -53,7 +54,7 @@ namespace NServiceBus
 
             outgoingFiles.Enqueue(new OutgoingFile(committedPath, messagePath));
 
-            return AsyncFile.WriteText(txPath, messageContents);
+            return AsyncFile.WriteText(txPath, messageContents, token);
         }
 
         public bool Complete()

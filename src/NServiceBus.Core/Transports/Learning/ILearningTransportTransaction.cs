@@ -1,5 +1,6 @@
 namespace NServiceBus
 {
+    using System.Threading;
     using System.Threading.Tasks;
 
     interface ILearningTransportTransaction
@@ -14,7 +15,7 @@ namespace NServiceBus
 
         void ClearPendingOutgoingOperations();
 
-        Task Enlist(string messagePath, string messageContents);
+        Task Enlist(string messagePath, string messageContents, CancellationToken token);
 
         bool Complete();
     }

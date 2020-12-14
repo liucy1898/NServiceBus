@@ -17,7 +17,7 @@
             this.basePath = basePath;
         }
 
-        public Task Init(Func<MessageContext, Task> onMessage, Func<ErrorContext, Task<ErrorHandleResult>> onError, CriticalError criticalError, PushSettings settings)
+        public Task Init(Func<MessageContext, Task> onMessage, Func<ErrorContext, Task<ErrorHandleResult>> onError, CriticalError criticalError, PushSettings settings, CancellationToken token)
         {
             this.onMessage = onMessage;
             this.onError = onError;

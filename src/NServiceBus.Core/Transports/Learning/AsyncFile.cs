@@ -8,11 +8,11 @@ namespace NServiceBus
 
     static class AsyncFile
     {
-        public static async Task WriteBytes(string filePath, byte[] bytes)
+        public static async Task WriteBytes(string filePath, byte[] bytes, CancellationToken token)
         {
             using (var stream = CreateWriteStream(filePath, FileMode.Create))
             {
-                await stream.WriteAsync(bytes, 0, bytes.Length).ConfigureAwait(false);
+                await stream.WriteAsync(bytes, 0, bytes.Length, token).ConfigureAwait(false);
             }
         }
 
@@ -25,7 +25,7 @@ namespace NServiceBus
         }
 
         //write to temp file first so we can do a atomic move
-        public static async Task WriteTextAtomic(string targetPath, string text)
+        public static async Task WriteTextAtomic(string targetPath, string text, CancellationToken token)
         {
             var tempFile = Path.GetTempFileName();
             var bytes = Encoding.UTF8.GetBytes(text);
@@ -34,7 +34,7 @@ namespace NServiceBus
             {
                 using (var stream = CreateWriteStream(tempFile, FileMode.Open))
                 {
-                    await stream.WriteAsync(bytes, 0, bytes.Length).ConfigureAwait(false);
+                    await stream.WriteAsync(bytes, 0, bytes.Length, token).ConfigureAwait(false);
                 }
             }
             catch
@@ -62,11 +62,11 @@ namespace NServiceBus
             return new FileStream(filePath, fileMode, FileAccess.Write, FileShare.None, bufferSize: 4096, useAsync: true);
         }
 
-        public static Task WriteText(string filePath, string text)
+        public static Task WriteText(string filePath, string text, CancellationToken token)
         {
             var bytes = Encoding.UTF8.GetBytes(text);
 
-            return WriteBytes(filePath, bytes);
+            return WriteBytes(filePath, bytes, token);
         }
 
         public static async Task<string> ReadText(string filePath)

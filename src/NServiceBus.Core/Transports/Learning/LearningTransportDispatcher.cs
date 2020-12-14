@@ -33,7 +33,7 @@ namespace NServiceBus
                 DispatchMulticast(outgoingMessages.MulticastTransportOperations, transaction, token));
         }
 
-        async Task DispatchMulticast(IEnumerable<MulticastTransportOperation> transportOperations, TransportTransaction transaction)
+        async Task DispatchMulticast(IEnumerable<MulticastTransportOperation> transportOperations, TransportTransaction transaction, CancellationToken token)
         {
             var tasks = new List<Task>();
 
@@ -44,7 +44,7 @@ namespace NServiceBus
 
                 foreach (var subscriber in subscribers)
                 {
-                    tasks.Add(WriteMessage(subscriber, transportOperation, transaction));
+                    tasks.Add(WriteMessage(subscriber, transportOperation, transaction, token));
                 }
             }
 

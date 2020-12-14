@@ -2,6 +2,7 @@
 {
     using System;
     using System.IO;
+    using System.Threading;
     using System.Threading.Tasks;
     using Extensibility;
     using Transport;
@@ -15,7 +16,7 @@
             this.basePath = Path.Combine(basePath, ".events");
         }
 
-        public async Task Subscribe(Type eventType, ContextBag context)
+        public async Task Subscribe(Type eventType, ContextBag context, CancellationToken token)
         {
             var eventDir = GetEventDirectory(eventType);
 
@@ -31,7 +32,7 @@
             {
                 try
                 {
-                    await AsyncFile.WriteText(subscriptionEntryPath, localAddress).ConfigureAwait(false);
+                    await AsyncFile.WriteText(subscriptionEntryPath, localAddress, token).ConfigureAwait(false);
 
                     return;
                 }
@@ -45,12 +46,12 @@
                     }
 
                     //allow the other task to complete
-                    await Task.Delay(100).ConfigureAwait(false);
+                    await Task.Delay(100, token).ConfigureAwait(false);
                 }
             }
         }
 
-        public async Task Unsubscribe(Type eventType, ContextBag context)
+        public async Task Unsubscribe(Type eventType, ContextBag context, CancellationToken token)
         {
             var eventDir = GetEventDirectory(eventType);
             var subscriptionEntryPath = GetSubscriptionEntryPath(eventDir);
@@ -81,7 +82,7 @@
                     }
 
                     //allow the other task to complete
-                    await Task.Delay(100).ConfigureAwait(false);
+                    await Task.Delay(100, token).ConfigureAwait(false);
                 }
             }
         }

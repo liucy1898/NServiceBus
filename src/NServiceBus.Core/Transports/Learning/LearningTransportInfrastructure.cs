@@ -74,14 +74,14 @@
 
         public override TransportReceiveInfrastructure ConfigureReceiveInfrastructure()
         {
-            return new TransportReceiveInfrastructure(() => new LearningTransportMessagePump(storagePath), () => new LearningTransportQueueCreator(), () => Task.FromResult(StartupCheckResult.Success));
+            return new TransportReceiveInfrastructure(() => new LearningTransportMessagePump(storagePath), () => new LearningTransportQueueCreator(), token => Task.FromResult(StartupCheckResult.Success));
         }
 
         public override TransportSendInfrastructure ConfigureSendInfrastructure()
         {
             var maxPayloadSize = settings.GetOrDefault<bool>(NoPayloadSizeRestrictionKey) ? int.MaxValue / 1024 : 64; //64 kB is the max size of the ASQ transport
 
-            return new TransportSendInfrastructure(() => new LearningTransportDispatcher(storagePath, maxPayloadSize), () => Task.FromResult(StartupCheckResult.Success));
+            return new TransportSendInfrastructure(() => new LearningTransportDispatcher(storagePath, maxPayloadSize), token => Task.FromResult(StartupCheckResult.Success));
         }
 
         public override TransportSubscriptionInfrastructure ConfigureSubscriptionInfrastructure()

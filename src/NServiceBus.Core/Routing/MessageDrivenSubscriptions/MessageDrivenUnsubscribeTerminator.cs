@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Threading;
     using System.Threading.Tasks;
     using Extensibility;
     using Logging;
@@ -21,7 +22,7 @@
             this.dispatcher = dispatcher;
         }
 
-        protected override Task Terminate(IUnsubscribeContext context)
+        protected override Task Terminate(IUnsubscribeContext context, CancellationToken token)
         {
             var eventType = context.EventType;
 
@@ -45,26 +46,26 @@
                 unsubscribeMessage.Headers[Headers.TimeSent] = DateTimeOffsetHelper.ToWireFormattedString(DateTimeOffset.UtcNow);
                 unsubscribeMessage.Headers[Headers.NServiceBusVersion] = GitVersionInformation.MajorMinorPatch;
 
-                unsubscribeTasks.Add(SendUnsubscribeMessageWithRetries(publisherAddress, unsubscribeMessage, eventType.AssemblyQualifiedName, context.Extensions));
+                unsubscribeTasks.Add(SendUnsubscribeMessageWithRetries(publisherAddress, unsubscribeMessage, eventType.AssemblyQualifiedName, context.Extensions, token));
             }
             return Task.WhenAll(unsubscribeTasks);
         }
 
-        async Task SendUnsubscribeMessageWithRetries(string destination, OutgoingMessage unsubscribeMessage, string messageType, ContextBag context, int retriesCount = 0)
+        async Task SendUnsubscribeMessageWithRetries(string destination, OutgoingMessage unsubscribeMessage, string messageType, ContextBag context, CancellationToken token, int retriesCount = 0)
         {
             var state = context.GetOrCreate<Settings>();
             try
             {
                 var transportOperation = new TransportOperation(unsubscribeMessage, new UnicastAddressTag(destination));
                 var transportTransaction = context.GetOrCreate<TransportTransaction>();
-                await dispatcher.Dispatch(new TransportOperations(transportOperation), transportTransaction, context).ConfigureAwait(false);
+                await dispatcher.Dispatch(new TransportOperations(transportOperation), transportTransaction, context, token).ConfigureAwait(false);
             }
             catch (QueueNotFoundException ex)
             {
                 if (retriesCount < state.MaxRetries)
                 {
-                    await Task.Delay(state.RetryDelay).ConfigureAwait(false);
-                    await SendUnsubscribeMessageWithRetries(destination, unsubscribeMessage, messageType, context, ++retriesCount).ConfigureAwait(false);
+                    await Task.Delay(state.RetryDelay, token).ConfigureAwait(false);
+                    await SendUnsubscribeMessageWithRetries(destination, unsubscribeMessage, messageType, context, token, ++retriesCount).ConfigureAwait(false);
                 }
                 else
                 {
