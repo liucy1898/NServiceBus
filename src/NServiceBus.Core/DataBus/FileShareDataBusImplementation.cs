@@ -16,7 +16,7 @@ namespace NServiceBus
 
         public TimeSpan MaxMessageTimeToLive { get; set; }
 
-        public Task<Stream> Get(string key)
+        public Task<Stream> Get(string key, CancellationToken token)
         {
             var filePath = Path.Combine(basePath, key);
 
@@ -26,7 +26,7 @@ namespace NServiceBus
             return Task.FromResult((Stream) fileStream);
         }
 
-        public async Task<string> Put(Stream stream, TimeSpan timeToBeReceived)
+        public async Task<string> Put(Stream stream, TimeSpan timeToBeReceived, CancellationToken token)
         {
             var key = GenerateKey(timeToBeReceived);
 
@@ -37,7 +37,7 @@ namespace NServiceBus
             using (var output = new FileStream(filePath, FileMode.CreateNew, FileAccess.Write, FileShare.Read, 4096, FileOptions.Asynchronous))
             {
                 const int bufferSize = 32*1024;
-                await stream.CopyToAsync(output, bufferSize).ConfigureAwait(false);
+                await stream.CopyToAsync(output, bufferSize, token).ConfigureAwait(false);
             }
 
             logger.DebugFormat("Saved stream to '{0}'.", filePath);

@@ -2,6 +2,7 @@
 {
     using System;
     using System.IO;
+    using System.Threading;
     using System.Threading.Tasks;
     using System.Transactions;
     using DataBus;
@@ -19,7 +20,7 @@
             dataBus = databus;
         }
 
-        public async Task Invoke(IOutgoingLogicalMessageContext context, Func<IOutgoingLogicalMessageContext, Task> next)
+        public async Task Invoke(IOutgoingLogicalMessageContext context, Func<IOutgoingLogicalMessageContext, CancellationToken, Task> next, CancellationToken token)
         {
             var timeToBeReceived = TimeSpan.MaxValue;
 
@@ -55,7 +56,7 @@
 
                     using (new TransactionScope(TransactionScopeOption.Suppress, TransactionScopeAsyncFlowOption.Enabled))
                     {
-                        headerValue = await dataBus.Put(stream, timeToBeReceived).ConfigureAwait(false);
+                        headerValue = await dataBus.Put(stream, timeToBeReceived, token).ConfigureAwait(false);
                     }
 
                     string headerKey;
@@ -77,7 +78,7 @@
                 }
             }
 
-            await next(context).ConfigureAwait(false);
+            await next(context, token).ConfigureAwait(false);
         }
 
         readonly Conventions conventions;

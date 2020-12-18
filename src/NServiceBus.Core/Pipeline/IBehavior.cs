@@ -19,7 +19,7 @@ namespace NServiceBus.Pipeline
         /// <param name="context">The current context.</param>
         /// <param name="next">The next <see cref="IBehavior{TIn,TOut}" /> in the chain to execute.</param>
         /// <param name="token">A <see cref="CancellationToken"/> to observe while invoking.</param>
-        Task Invoke(TInContext context, Func<TOutContext, Task> next, CancellationToken token);
+        Task Invoke(TInContext context, Func<TOutContext, CancellationToken, Task> next, CancellationToken token);
     }
 
     /// <summary>

@@ -1,6 +1,7 @@
 ﻿namespace NServiceBus
 {
     using System;
+    using System.Threading;
     using System.Threading.Tasks;
     using System.Transactions;
     using DataBus;
@@ -16,7 +17,7 @@
             dataBus = databus;
         }
 
-        public async Task Invoke(IIncomingLogicalMessageContext context, Func<IIncomingLogicalMessageContext, Task> next)
+        public async Task Invoke(IIncomingLogicalMessageContext context, Func<IIncomingLogicalMessageContext, CancellationToken, Task> next, CancellationToken token)
         {
             var message = context.Message.Instance;
 
@@ -43,7 +44,7 @@
 
                 using (new TransactionScope(TransactionScopeOption.Suppress, TransactionScopeAsyncFlowOption.Enabled))
                 {
-                    using (var stream = await dataBus.Get(dataBusKey).ConfigureAwait(false))
+                    using (var stream = await dataBus.Get(dataBusKey, token).ConfigureAwait(false))
                     {
                         var value = dataBusSerializer.Deserialize(stream);
 
@@ -59,7 +60,7 @@
                 }
             }
 
-            await next(context).ConfigureAwait(false);
+            await next(context, token).ConfigureAwait(false);
         }
 
         readonly Conventions conventions;

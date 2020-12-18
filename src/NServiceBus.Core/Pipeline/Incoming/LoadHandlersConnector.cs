@@ -3,6 +3,7 @@
     using System;
     using System.Collections.Generic;
     using System.Text;
+    using System.Threading;
     using System.Threading.Tasks;
     using Extensibility;
     using Logging;
@@ -22,11 +23,11 @@
             this.adapter = adapter;
         }
 
-        public override async Task Invoke(IIncomingLogicalMessageContext context, Func<IInvokeHandlerContext, Task> stage)
+        public override async Task Invoke(IIncomingLogicalMessageContext context, Func<IInvokeHandlerContext, CancellationToken, Task> stage, CancellationToken token)
         {
             var outboxTransaction = context.Extensions.Get<OutboxTransaction>();
             var transportTransaction = context.Extensions.Get<TransportTransaction>();
-            using (var storageSession = await AdaptOrOpenNewSynchronizedStorageSession(transportTransaction, outboxTransaction, context.Extensions).ConfigureAwait(false))
+            using (var storageSession = await AdaptOrOpenNewSynchronizedStorageSession(transportTransaction, outboxTransaction, context.Extensions, token).ConfigureAwait(false))
             {
                 var handlersToInvoke = messageHandlerRegistry.GetHandlersFor(context.Message.MessageType);
 
@@ -46,7 +47,7 @@
                     messageHandler.Instance = context.Builder.GetRequiredService(messageHandler.HandlerType);
 
                     var handlingContext = this.CreateInvokeHandlerContext(messageHandler, storageSession, context);
-                    await stage(handlingContext).ConfigureAwait(false);
+                    await stage(handlingContext, token).ConfigureAwait(false);
 
                     if (handlingContext.HandlerInvocationAborted)
                     {
@@ -55,15 +56,15 @@
                     }
                 }
                 context.MessageHandled = true;
-                await storageSession.CompleteAsync().ConfigureAwait(false);
+                await storageSession.CompleteAsync(token).ConfigureAwait(false);
             }
         }
 
-        async Task<CompletableSynchronizedStorageSession> AdaptOrOpenNewSynchronizedStorageSession(TransportTransaction transportTransaction, OutboxTransaction outboxTransaction, ContextBag contextBag)
+        async Task<CompletableSynchronizedStorageSession> AdaptOrOpenNewSynchronizedStorageSession(TransportTransaction transportTransaction, OutboxTransaction outboxTransaction, ContextBag contextBag, CancellationToken token)
         {
-            return await adapter.TryAdapt(outboxTransaction, contextBag).ConfigureAwait(false)
-                   ?? await adapter.TryAdapt(transportTransaction, contextBag).ConfigureAwait(false)
-                   ?? await synchronizedStorage.OpenSession(contextBag).ConfigureAwait(false);
+            return await adapter.TryAdapt(outboxTransaction, contextBag, token).ConfigureAwait(false)
+                   ?? await adapter.TryAdapt(transportTransaction, contextBag, token).ConfigureAwait(false)
+                   ?? await synchronizedStorage.OpenSession(contextBag, token).ConfigureAwait(false);
         }
 
         static void LogHandlersInvocation(IIncomingLogicalMessageContext context, List<MessageHandler> handlersToInvoke)

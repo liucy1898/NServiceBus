@@ -1,5 +1,6 @@
 namespace NServiceBus.MessageMutator
 {
+    using System.Threading;
     using System.Threading.Tasks;
 
     /// <summary>
@@ -12,6 +13,6 @@ namespace NServiceBus.MessageMutator
         /// Modifies various properties of the transport message.
         /// </summary>
         /// <exception cref="System.Exception">This exception will be thrown if <code>null</code> is returned. Return a Task or mark the method as <code>async</code>.</exception>
-        Task MutateIncoming(MutateIncomingTransportMessageContext context);
+        Task MutateIncoming(MutateIncomingTransportMessageContext context, CancellationToken token);
     }
 }

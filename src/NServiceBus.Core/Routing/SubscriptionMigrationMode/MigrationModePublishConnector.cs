@@ -3,6 +3,7 @@
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Threading;
     using System.Threading.Tasks;
     using Pipeline;
     using Routing;
@@ -16,12 +17,12 @@
             this.unicastPublishRouter = unicastPublishRouter;
         }
 
-        public override async Task Invoke(IOutgoingPublishContext context, Func<IOutgoingLogicalMessageContext, Task> stage)
+        public override async Task Invoke(IOutgoingPublishContext context, Func<IOutgoingLogicalMessageContext, CancellationToken, Task> stage, CancellationToken token)
         {
             context.Headers[Headers.MessageIntent] = MessageIntentEnum.Publish.ToString();
 
             var eventType = context.Message.MessageType;
-            var addressLabels = await GetRoutingStrategies(context, eventType).ConfigureAwait(false);
+            var addressLabels = await GetRoutingStrategies(context, eventType, token).ConfigureAwait(false);
 
             var routingStrategies = new List<RoutingStrategy>
             {
@@ -37,7 +38,7 @@
 
             try
             {
-                await stage(logicalMessageContext).ConfigureAwait(false);
+                await stage(logicalMessageContext, token).ConfigureAwait(false);
             }
             catch (QueueNotFoundException ex)
             {
@@ -45,9 +46,9 @@
             }
         }
 
-        async Task<List<UnicastRoutingStrategy>> GetRoutingStrategies(IOutgoingPublishContext context, Type eventType)
+        async Task<List<UnicastRoutingStrategy>> GetRoutingStrategies(IOutgoingPublishContext context, Type eventType, CancellationToken token)
         {
-            var addressLabels = await unicastPublishRouter.Route(eventType, distributionPolicy, context).ConfigureAwait(false);
+            var addressLabels = await unicastPublishRouter.Route(eventType, distributionPolicy, context, token).ConfigureAwait(false);
             return addressLabels.ToList();
         }
 
